@@ -25,7 +25,7 @@ data = pd.DataFrame({
 })
 
 # Save the DataFrame to a CSV file
-csv_path = "./sample_data_v2.csv"
+csv_path = "./coordinates_sample_data.csv"
 data.to_csv(csv_path, index=False)
 
 print(f"CSV file saved as {csv_path}")

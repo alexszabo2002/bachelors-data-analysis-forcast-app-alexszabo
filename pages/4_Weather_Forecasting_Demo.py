@@ -15,8 +15,8 @@ def get_weather_data(api_key, city, date):
         st.error(f"Error fetching data: {data.get('error', {}).get('message', 'Unknown error')}")
         return None
 
-    if 'forecast' not in data:
-        st.error(f"No weather data found for {city}. Please check the city name and try again.")
+    if 'forecast' not in data or not data['forecast']['forecastday']:
+        st.error(f"No weather data found for {city} on {date_str}. Please check the city name and try again.")
         return None
 
     forecast_day = data['forecast']['forecastday'][0]['day']
@@ -38,10 +38,10 @@ def is_valid_location(api_key, city):
     return len(data) > 0  # Returnează True dacă locația este validă
 
 # Cheie API
-api_key = '8a2b208ea9f9479c94c135753240106'  # Înlocuiește 'YOUR_WEATHERAPI_KEY' cu cheia ta API de la WeatherAPI
+api_key = '8a2b208ea9f9479c94c135753240106 '  # Înlocuiește 'YOUR_WEATHERAPI_KEY' cu cheia ta API de la WeatherAPI
 
 # Introducerea numelui orașului
-city = st.text_input('Enter city name:')
+city = st.text_input('Enter city name:', 'New York')
 
 if city:
     if is_valid_location(api_key, city):
