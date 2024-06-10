@@ -141,7 +141,7 @@ def chart(df, chart_type, x_axis, y_axis, agg_func=None):
         chart = st.line_chart(grouped_df.set_index(x_axis))
 
     elif chart_type == 'Scatter Chart':
-        
+
         chart = st.scatter_chart(df[[x_axis, y_axis]].set_index(x_axis))
 
     return chart
