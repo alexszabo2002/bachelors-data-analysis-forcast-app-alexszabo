@@ -30,7 +30,7 @@ def download_data(ticker, ticker_start_date, ticker_end_date):
             st.error("Could not download data for the given ticker and date range.")
             st.stop()
     else:
-        st.error("Please provide a ticker and date range.")
+        st.warning("Please provide a ticker and date range.")
         st.stop()
 
 
@@ -84,8 +84,14 @@ def check_stationarity(dataset):
     if p_value is not None:
         if p_value < 0.05:
             st.write("The Series is Stationary")
+            st.write("")
+            st.write("")
+            st.write("")
         else:
             st.write("The Series is NOT Stationary")
+            st.write("")
+            st.write("")
+            st.write("")
 
 
 def choose_model(dataset):
@@ -96,6 +102,9 @@ def choose_model(dataset):
         st.write("Best model found:")
         stepwise_fit = auto_arima(dataset['Adj Close'], trace=True, suppress_warnings=True)
         st.write(stepwise_fit)
+        st.write("")
+        st.write("")
+        st.write("")
         return stepwise_fit
     except:
         st.warning("Could not find a model for the forecast.")
@@ -137,7 +146,7 @@ def test_model(dataset):
         st.write("Predictions on Test Set")
         start = len(train)
         end = len(train) + len(test) - 1
-        pred = model.predict(start=start, end=end, typ='levels')
+        pred = model.predict(start=start, end=end, type='levels')
         pred.index = dataset.index[start:end+1]
         left_col, right_col = st.columns(2)
         with left_col:
@@ -146,6 +155,7 @@ def test_model(dataset):
             versus_chart(test_data=test, prediction=pred)
         rmse = sqrt(mean_squared_error(pred, test['Adj Close']))
         st.write("RMSE: ", rmse)
+        st.write("")
     except:
         st.warning("An error occurred while testing the model.")
 
@@ -174,7 +184,7 @@ def forecast(dataset):
         start = dataset.index[-1]
         end = start + timedelta(days=10)
         index_future_dates = pd.date_range(start=start, end=end)
-        pred = model.predict(start=len(dataset), end=len(dataset)+10, typ='levels').rename("ARIMA Predictions")
+        pred = model.predict(start=len(dataset), end=len(dataset)+10, type='levels').rename("ARIMA Predictions")
         pred.index = index_future_dates
         left_col, right_col = st.columns(2)
         with left_col:
