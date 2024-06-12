@@ -6,7 +6,7 @@ from pages_funcs.forecast_funcs import init_sidebar, download_data, ticker_chart
 
 authenticator = get_authenticator()
 
-st.markdown("# Plotting Demo")
+st.markdown("# Forecast")
 
 ticker, ticker_start_date, ticker_end_date = init_sidebar()
 
@@ -16,14 +16,14 @@ ticker_data_tab, forecast_tab, news_tab = st.tabs(["Ticker Data", "Forecast", "T
 
 with ticker_data_tab:
     ticker_chart(downloaded_data, ticker)
-    st.write(downloaded_data)
+    st.dataframe(data=downloaded_data, use_container_width=True)
 
 with forecast_tab:
     initial_data = setup_data(downloaded_data)
     check_stationarity(initial_data)
     best_model = choose_model(initial_data)
-    test_model(initial_data)
-    forecast(initial_data)
+    test_model(dataset=initial_data, chosen_model=best_model)
+    forecast(dataset=initial_data, chosen_model=best_model)
 
 with news_tab:
     st.header(f"News of {ticker}")

@@ -5,7 +5,7 @@ from pages_funcs.data_analysis_funcs import process_data, classify_columns, set_
 
 authenticator = get_authenticator()
 
-st.markdown("# Data Analysis Demo")
+st.markdown("# Data Analysis")
 
 uploaded_file = st.file_uploader(label="Upload a file", type=['csv','xlsx'], help="only csv or xlsx files are supported")
 

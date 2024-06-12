@@ -13,9 +13,9 @@ from datetime import timedelta
 
 def init_sidebar():
 
-    ticker = st.sidebar.text_input('Ticker')
-    ticker_start_date = st.sidebar.date_input('Start Date')
-    ticker_end_date = st.sidebar.date_input('End Date')
+    ticker = st.sidebar.text_input(label='Ticker', help="Any ticker from yahoo finance f.g. BTC-USD, ETH-USD, TSLA, NVDA etc.")
+    ticker_start_date = st.sidebar.date_input(label='Start Date', value=None)
+    ticker_end_date = st.sidebar.date_input(label='End Date', value=None)
 
     return ticker, ticker_start_date, ticker_end_date
 
@@ -135,20 +135,20 @@ def versus_chart(test_data, prediction):
     st.plotly_chart(fig)
 
 
-def test_model(dataset):
+def test_model(dataset, chosen_model):
 
     try:
         fifth = dataset.shape[0] // 5
         train = dataset.iloc[:-fifth]
         test = dataset.iloc[-fifth:]
-        model = ARIMA(train['Adj Close'], order=(1,0,0))
+        model = ARIMA(train['Adj Close'], order=chosen_model.get_params()["order"])
         model = model.fit()
         st.write("Predictions on Test Set")
         start = len(train)
         end = len(train) + len(test) - 1
         pred = model.predict(start=start, end=end, type='levels')
         pred.index = dataset.index[start:end+1]
-        left_col, right_col = st.columns(2)
+        left_col, right_col = st.columns([0.4, 0.6])
         with left_col:
             st.write(pred)
         with right_col:
@@ -175,10 +175,10 @@ def forecast_chart(data, prediction):
     st.plotly_chart(fig)
 
 
-def forecast(dataset):
+def forecast(dataset, chosen_model):
 
     try:
-        model = ARIMA(dataset['Adj Close'], order=(1,0,0))
+        model = ARIMA(dataset['Adj Close'], order=chosen_model.get_params()["order"])
         model = model.fit()
         st.write("Forecast")
         start = dataset.index[-1]
@@ -186,7 +186,7 @@ def forecast(dataset):
         index_future_dates = pd.date_range(start=start, end=end)
         pred = model.predict(start=len(dataset), end=len(dataset)+10, type='levels').rename("ARIMA Predictions")
         pred.index = index_future_dates
-        left_col, right_col = st.columns(2)
+        left_col, right_col = st.columns([0.4, 0.6])
         with left_col:
             st.write(pred)
         with right_col:

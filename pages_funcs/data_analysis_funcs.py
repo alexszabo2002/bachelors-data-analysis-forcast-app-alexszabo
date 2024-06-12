@@ -94,7 +94,6 @@ def process_data(uploaded_file):
         return df, df_filled
     
     else:
-        st.warning("Something went wrong while uploading the file.")
         st.stop()
 
 
