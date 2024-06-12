@@ -1,8 +1,7 @@
 import streamlit as st
-from stocknews import StockNews
 
 from authentication.auth import get_authenticator
-from pages_funcs.forecast_funcs import init_sidebar, download_data, ticker_chart, setup_data, check_stationarity, choose_model, test_model, forecast
+from pages_funcs.forecast_funcs import init_sidebar, download_data, ticker_chart, setup_data, check_stationarity, choose_model, test_model, forecast, get_news
 
 authenticator = get_authenticator()
 
@@ -26,15 +25,4 @@ with forecast_tab:
     forecast(dataset=initial_data, chosen_model=best_model)
 
 with news_tab:
-    st.header(f"News of {ticker}")
-    sn = StockNews(stocks=ticker, save_news=False)
-    df_news = sn.read_rss()
-    for i in range(5):
-        st.subheader(f"News {i+1}")
-        st.write(df_news['published'][i])
-        st.write(df_news['title'][i])
-        st.write(df_news['summary'][i])
-        title_sentiment = df_news['sentiment_title'][i]
-        st.write(f"Title Sentiment {title_sentiment}")
-        news_sentiment = df_news['sentiment_summary'][i]
-        st.write(f"News Sentiment {news_sentiment}")
+    get_news(ticker)

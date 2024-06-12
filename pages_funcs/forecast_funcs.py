@@ -194,3 +194,17 @@ def forecast(dataset, chosen_model):
     except:
         st.warning("An error occurred while forecasting the data.")
 
+
+def get_news(ticker):
+
+    try:
+        st.header(f"News of {ticker}")
+        search = yf.Tickers(tickers=ticker)
+        for i in range(5):
+            st.subheader(search.news()[ticker][i]["title"])
+            st.write("Publisher: ", search.news()[ticker][i]["publisher"])
+            st.write(search.news()[ticker][i]["link"])
+            st.write("")
+    except:
+        st.warning("Could not load news about ", ticker)
+
