@@ -19,10 +19,10 @@ with ticker_data_tab:
 
 with forecast_tab:
     initial_data = setup_data(downloaded_data)
-    check_stationarity(initial_data)
-    best_model = choose_model(initial_data)
-    test_model(dataset=initial_data, chosen_model=best_model)
-    forecast(dataset=initial_data, chosen_model=best_model)
+    initial_data, stationary_data, is_stationary = check_stationarity(initial_data)
+    best_model = choose_model(stationary_data)
+    test_model(dataset=stationary_data, chosen_model=best_model)
+    forecast(dataset=stationary_data, chosen_model=best_model)
 
 with news_tab:
     get_news(ticker)

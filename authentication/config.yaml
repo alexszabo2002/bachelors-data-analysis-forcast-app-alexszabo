@@ -1,17 +1,17 @@
 credentials:
   usernames:
-    aszabo:
+    alexszabo:
       email: aszabo@gmail.com
       failed_login_attempts: 0
       logged_in: False
       name: Alex Szabo
-      password: abc123
-    meminescu:
-      email: meminescu@gmail.com
+      password: alexszabo
+    andreipopescu:
+      email: apopescu@gmail.com
       failed_login_attempts: 0
       logged_in: False
-      name: Mihai Eminescu
-      password: def456
+      name: Andrei Popescu
+      password: andreipopescu
 cookie:
   expiry_days: 30
   key: cookiesignaturekey

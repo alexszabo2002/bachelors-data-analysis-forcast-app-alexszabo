@@ -1,7 +1,7 @@
 import streamlit as st
 
 from authentication.auth import get_authenticator
-from pages_funcs.data_analysis_funcs import process_data, classify_columns, set_chart_filters, chart
+from pages_funcs.data_analysis_funcs import process_data, classify_columns, set_chart_filters, chart, save_dataframe_button
 
 authenticator = get_authenticator()
 
@@ -12,6 +12,8 @@ uploaded_file = st.file_uploader(label="Upload a file", type=['csv','xlsx'], hel
 df_init, df_filled = process_data(uploaded_file)
 
 numerical_columns, categorical_columns, temporal_columns = classify_columns(df_filled)
+
+save_dataframe_button(df_filled)
 
 tab_statistics, tab_charts = st.tabs(["Descriptive Statistics", "Charts"])
 

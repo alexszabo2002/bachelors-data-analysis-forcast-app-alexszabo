@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
+import firebase.firebase_script as fb
 
 
 def load_data(uploaded_file):
@@ -95,6 +96,14 @@ def process_data(uploaded_file):
     
     else:
         st.stop()
+
+
+def save_dataframe_button(df):
+
+    if st.button("Save DataFrame to Firebase"):
+        user_id = 'alexszabo'
+        url = fb.save_dataframe_to_firebase(df, user_id, 'processed_dataframe')
+        st.success(f"DataFrame saved to Firebase: {url}")
 
 
 def chart(df, chart_type, x_axis, y_axis, agg_func=None):

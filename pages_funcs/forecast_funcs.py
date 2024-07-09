@@ -3,7 +3,7 @@ import yfinance as yf
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
-from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.stattools import adfuller, kpss, arma_order_select_ic
 from pmdarima import auto_arima
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.metrics import mean_squared_error
@@ -60,38 +60,104 @@ def setup_data(data):
         st.stop()
 
 
-def adf_test(dataset):
+def adf_test(dataset, lags):
     
     try:
-        df_test = adfuller(dataset, autolag='AIC')
-        st.write("1. ADF : ", df_test[0])
+        df_test = adfuller(dataset, maxlag=lags, autolag=None)
+        st.write("Results of ADF Test:")
+        st.write("1. Test Statistic : ", df_test[0])
         st.write("2. P-Value : ", df_test[1])
         st.write("3. Number of Lags : ", df_test[2])
-        st.write("4. Number of Observations used for ADF Regression and Critical Values calculation : ", df_test[3])
-        st.write("5. Critical Values : ")
+        st.write("4. Critical Values : ")
         for key, val in df_test[4].items():
             st.write(key, ": ", val)
         return df_test[1]
     except:
         st.warning("An error occurred while performing the ADF test.")
         return None
+    
+
+def kpss_test(dataset, lags):
+    
+    try:
+        df_test = kpss(dataset, nlags=lags, regression='c')
+        st.write("Results of KPSS Test:")
+        st.write("1. Test Statistic : ", df_test[0])
+        st.write("2. P-Value : ", df_test[1])
+        st.write("3. Number of Lags : ", df_test[2])
+        st.write("4. Critical Values : ")
+        try:
+            df_test[3].pop("2.5%")
+        except:
+            e = None
+        for key, val in df_test[3].items():
+            st.write(key, ": ", val)
+        return df_test[1]
+    except:
+        st.warning("An error occurred while performing the KPSS test.")
+        return None
 
 
 def check_stationarity(dataset):
 
-    st.write("Check For Stationarity")
-    p_value = adf_test(dataset['Adj Close'])
-    if p_value is not None:
-        if p_value < 0.05:
-            st.write("The Series is Stationary")
-            st.write("")
-            st.write("")
-            st.write("")
+    st.subheader("Check For Stationarity")
+    significance_level = 0.05
+    dataset_copy = dataset.copy()
+    is_stationary = False
+    iterations = 0
+    while not is_stationary and iterations < 5:
+        st.write("Iteration ", iterations + 1)
+        st.write(dataset_copy)
+        lags = arma_order_select_ic(dataset_copy['Adj Close'].dropna(), ic='aic', trend='c')['aic_min_order'][0]
+        st.write(arma_order_select_ic(dataset_copy['Adj Close'].dropna(), ic='aic', trend='c'))
+        adf_stationarity, kpss_stationarity = None, None
+        adf_col, kpss_col = st.columns(2)
+        with adf_col:
+            adf_p_value = adf_test(dataset_copy['Adj Close'].dropna(), lags)
+            if adf_p_value is not None:
+                if adf_p_value < significance_level:
+                    st.write("Based upon the p-value of ADF test of ", round(adf_p_value, ndigits=4), " < ", significance_level, " significance level, the null hypothesis can be rejected.")
+                    st.write("The Series is Stationary.")
+                    adf_stationarity = True
+                    st.write("")
+                else:
+                    st.write("Based upon the p-value of ADF test of ", round(adf_p_value, ndigits=4), " > ", significance_level, " significance level, the null hypothesis can not be rejected.")
+                    st.write("The Series is Non-Stationary.")
+                    adf_stationarity = False
+                    st.write("")
+        with kpss_col:
+            kpss_p_value = kpss_test(dataset_copy['Adj Close'].dropna(), lags)
+            if kpss_p_value is not None:
+                if kpss_p_value < significance_level:
+                    st.write("Based upon the p-value of KPSS test of ", round(kpss_p_value, ndigits=4), " < ", significance_level, " significance level, the null hypothesis can be rejected.")
+                    st.write("The Series is Non-Stationary.")
+                    kpss_stationarity = False
+                    st.write("")
+                else:
+                    st.write("Based upon the p-value of KPSS test of ", round(kpss_p_value, ndigits=4), " > ", significance_level, " significance level, the null hypothesis can not be rejected.")
+                    st.write("The Series is Stationary.")
+                    kpss_stationarity = True
+                    st.write("")
+        st.write("CONCLUSION")
+        st.write("")
+        if adf_stationarity is True and kpss_stationarity is True:
+            st.write("Both tests conclude that the series is stationary. The series is stationary.")
+            is_stationary = True
+        elif adf_stationarity is True and kpss_stationarity is False:
+            st.write("ADF indicates stationarity and KPSS indicates non-stationarity. The series is difference stationary. Differencing is to be used to make series stationary. The differenced series is checked for stationarity.")
+            dataset_copy['Adj Close'] = dataset_copy['Adj Close'].diff().dropna()
+        elif adf_stationarity is False and kpss_stationarity is True:
+            st.write("ADF indicates non-stationarity and KPSS indicates stationarity. The series is trend stationary. Trend needs to be removed to make series strict stationary. The detrended series is checked for stationarity.")
+            dataset_copy['Adj Close'] = (dataset_copy['Adj Close'] - dataset_copy['Adj Close'].shift(1)).dropna()
         else:
-            st.write("The Series is NOT Stationary")
-            st.write("")
-            st.write("")
-            st.write("")
+            st.write("Both tests conclude that the series is not stationary. The series is not stationary.")
+            dataset_copy['Adj Close'] = dataset_copy['Adj Close'].diff().dropna()
+        dataset_copy = dataset_copy.dropna()
+        iterations += 1
+        st.write("")
+        st.write("")
+        st.write("")
+    return dataset, dataset_copy, is_stationary
 
 
 def choose_model(dataset):
@@ -100,12 +166,12 @@ def choose_model(dataset):
         st.write("Figure out order for ARIMA Model...")
         st.write("Performing stepwise search to minimize AIC...")
         st.write("Best model found:")
-        stepwise_fit = auto_arima(dataset['Adj Close'], trace=True, suppress_warnings=True)
-        st.write(stepwise_fit)
+        model = auto_arima(dataset['Adj Close'])
+        st.write(model)
         st.write("")
         st.write("")
         st.write("")
-        return stepwise_fit
+        return model
     except:
         st.warning("Could not find a model for the forecast.")
         return None
@@ -146,7 +212,7 @@ def test_model(dataset, chosen_model):
         st.write("Predictions on Test Set")
         start = len(train)
         end = len(train) + len(test) - 1
-        pred = model.predict(start=start, end=end, type='levels')
+        pred = model.predict(start=start, end=end, typ='levels')
         pred.index = dataset.index[start:end+1]
         left_col, right_col = st.columns([0.4, 0.6])
         with left_col:
@@ -182,9 +248,9 @@ def forecast(dataset, chosen_model):
         model = model.fit()
         st.write("Forecast")
         start = dataset.index[-1]
-        end = start + timedelta(days=10)
+        end = start + timedelta(days=20)
         index_future_dates = pd.date_range(start=start, end=end)
-        pred = model.predict(start=len(dataset), end=len(dataset)+10, type='levels').rename("ARIMA Predictions")
+        pred = model.predict(start=len(dataset), end=len(dataset)+20, typ='levels').rename("ARIMA Predictions")
         pred.index = index_future_dates
         left_col, right_col = st.columns([0.4, 0.6])
         with left_col:
