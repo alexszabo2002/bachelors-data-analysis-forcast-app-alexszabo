@@ -1,11 +1,27 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
-import firebase.firebase_script as fb
 
+import firebase.firebase_funcs as fb
+
+
+def get_uploaded_file_name(uploaded_file):
+    try:
+        if uploaded_file is not None:
+            file_name = uploaded_file.name
+            if file_name.endswith(".csv"):
+                file_name = file_name.split(".csv")[0]
+            elif file_name.endswith(".xlsx"):
+                file_name = file_name.split(".xlsx")[0]
+            return file_name
+        else:
+            return None
+    except Exception as e:
+        st.error(f"Error getting file name: {e}")
+        return None
+    
 
 def load_data(uploaded_file):
-
     if uploaded_file is not None:
         try:
             df = pd.read_csv(uploaded_file)
@@ -15,21 +31,17 @@ def load_data(uploaded_file):
     else:
         st.warning("Something went wrong while uploading the file.")
         st.stop()
-
     return df
 
 
 def classify_columns(df):
-
     numerical_columns = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
     categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
     temporal_columns = df.select_dtypes(include=['datetime64[ns]']).columns.tolist()
-
     return numerical_columns, categorical_columns, temporal_columns
 
 
 def process_data(uploaded_file):
-
     if uploaded_file is not None:
         try:
             df = pd.read_csv(uploaded_file)
@@ -93,21 +105,18 @@ def process_data(uploaded_file):
         st.write(df_filled)
 
         return df, df_filled
-    
     else:
         st.stop()
 
 
-def save_dataframe_button(df):
-
+def save_dataframe_button(df, file_name):
     if st.button("Save DataFrame to Firebase"):
         user_id = 'alexszabo'
-        url = fb.save_dataframe_to_firebase(df, user_id, 'processed_dataframe')
+        url = fb.save_dataframe_to_firebase(df, user_id, file_name)
         st.success(f"DataFrame saved to Firebase: {url}")
 
 
 def chart(df, chart_type, x_axis, y_axis, agg_func=None):
-
     if x_axis == y_axis:
         st.warning("The same variable cannot be selected for both the x-axis and y-axis.")
         return None
@@ -155,7 +164,6 @@ def chart(df, chart_type, x_axis, y_axis, agg_func=None):
 
 
 def set_chart_filters(numerical_columns, categorical_columns, temporal_columns):
-
     chart_type = st.selectbox(label="What chart would you like to display?",
                               options=('Bar Chart', 'Line Chart', 'Scatter Chart'))
 
@@ -183,4 +191,3 @@ def set_chart_filters(numerical_columns, categorical_columns, temporal_columns):
         agg_function = None
 
     return chart_type, x_axis, y_axis, agg_function
-

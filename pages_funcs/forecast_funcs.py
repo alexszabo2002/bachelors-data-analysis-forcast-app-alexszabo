@@ -12,7 +12,6 @@ from datetime import timedelta
 
 
 def init_sidebar():
-
     ticker = st.sidebar.text_input(label='Ticker', help="Any ticker from yahoo finance f.g. BTC-USD, ETH-USD, TSLA, NVDA etc.")
     ticker_start_date = st.sidebar.date_input(label='Start Date', value=None)
     ticker_end_date = st.sidebar.date_input(label='End Date', value=None)
@@ -21,7 +20,6 @@ def init_sidebar():
 
 
 def download_data(ticker, ticker_start_date, ticker_end_date):
-
     if ticker and ticker_start_date and ticker_end_date:
         try:
             downloaded_data = yf.download(tickers=ticker, start=ticker_start_date, end=ticker_end_date)
@@ -35,7 +33,6 @@ def download_data(ticker, ticker_start_date, ticker_end_date):
 
 
 def ticker_chart(ticker_data, ticker):
-
     try:
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=ticker_data.index, y=ticker_data['Adj Close'], mode='lines', name='Adj Close'))
@@ -50,7 +47,6 @@ def ticker_chart(ticker_data, ticker):
 
 
 def setup_data(data):
-
     try:
         df = pd.DataFrame(data)
         df = df.dropna()
@@ -60,8 +56,7 @@ def setup_data(data):
         st.stop()
 
 
-def adf_test(dataset, lags):
-    
+def adf_test(dataset, lags): 
     try:
         df_test = adfuller(dataset, maxlag=lags, autolag=None)
         st.write("Results of ADF Test:")
@@ -78,7 +73,6 @@ def adf_test(dataset, lags):
     
 
 def kpss_test(dataset, lags):
-    
     try:
         df_test = kpss(dataset, nlags=lags, regression='c')
         st.write("Results of KPSS Test:")
@@ -99,7 +93,6 @@ def kpss_test(dataset, lags):
 
 
 def check_stationarity(dataset):
-
     st.subheader("Check For Stationarity")
     significance_level = 0.05
     dataset_copy = dataset.copy()
@@ -109,7 +102,7 @@ def check_stationarity(dataset):
         st.write("Iteration ", iterations + 1)
         st.write(dataset_copy)
         lags = arma_order_select_ic(dataset_copy['Adj Close'].dropna(), ic='aic', trend='c')['aic_min_order'][0]
-        st.write(arma_order_select_ic(dataset_copy['Adj Close'].dropna(), ic='aic', trend='c'))
+        #st.write(arma_order_select_ic(dataset_copy['Adj Close'].dropna(), ic='aic', trend='c'))
         adf_stationarity, kpss_stationarity = None, None
         adf_col, kpss_col = st.columns(2)
         with adf_col:
@@ -161,7 +154,6 @@ def check_stationarity(dataset):
 
 
 def choose_model(dataset):
-
     try:
         st.write("Figure out order for ARIMA Model...")
         st.write("Performing stepwise search to minimize AIC...")
@@ -178,7 +170,6 @@ def choose_model(dataset):
 
 
 def model_summary(model):
-
     if model is not None:
         st.write(model.summary())
     else:
@@ -186,7 +177,6 @@ def model_summary(model):
 
 
 def versus_chart(test_data, prediction):
-
     test_data_copy = test_data.copy()
     test_data_copy['Prediction'] = prediction
     fig = go.Figure()
@@ -202,7 +192,6 @@ def versus_chart(test_data, prediction):
 
 
 def test_model(dataset, chosen_model):
-
     try:
         fifth = dataset.shape[0] // 5
         train = dataset.iloc[:-fifth]
@@ -227,7 +216,6 @@ def test_model(dataset, chosen_model):
 
 
 def forecast_chart(data, prediction):
-
     data_copy = data.copy()
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data_copy.index, y=data_copy['Adj Close'], mode='lines', name='Past'))
@@ -242,7 +230,6 @@ def forecast_chart(data, prediction):
 
 
 def forecast(dataset, chosen_model):
-
     try:
         model = ARIMA(dataset['Adj Close'], order=chosen_model.get_params()["order"])
         model = model.fit()
@@ -262,7 +249,6 @@ def forecast(dataset, chosen_model):
 
 
 def get_news(ticker):
-
     try:
         st.header(f"News of {ticker}")
         search = yf.Tickers(tickers=ticker)
@@ -273,4 +259,3 @@ def get_news(ticker):
             st.write("")
     except:
         st.warning("Could not load news about ", ticker)
-

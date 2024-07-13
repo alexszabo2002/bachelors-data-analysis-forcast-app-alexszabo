@@ -113,4 +113,4 @@ frontend/cypress/snapshots/linux/1x
 .vscode/
 
 # Firebase Credentials
-firebase_config.json
+firebase/firebase_config.json
