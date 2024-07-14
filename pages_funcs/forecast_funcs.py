@@ -9,6 +9,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 from datetime import timedelta
+import itertools
 
 
 def init_sidebar():
@@ -183,7 +184,7 @@ def versus_chart(test_data, prediction):
     fig.add_trace(go.Scatter(x=test_data_copy.index, y=test_data_copy['Adj Close'], mode='lines', name='Actual'))
     fig.add_trace(go.Scatter(x=test_data_copy.index, y=test_data_copy['Prediction'], mode='lines', name='Predicted'))
     fig.update_layout(
-        title='Actual VS Predicted Adj Close',
+        title='Actual VS Predicted Differenced Adj Close',
         xaxis_title='Date',
         yaxis_title='Adj Close',
         legend_title='Legend'
@@ -259,3 +260,76 @@ def get_news(ticker):
             st.write("")
     except:
         st.warning("Could not load news about ", ticker)
+
+
+def arima_selection(data, split=0.8):
+    p = [0,1,2,3,4,5]
+    d = [0,1,2,3]
+    q = [0,1,2,3,4,5]
+    combs = list(itertools.product(p,d,q))
+    limit = int(len(data) * split)
+    train = data[:limit]
+    test = data[limit:]
+    start = len(train)
+    end = len(train) + len(test) - 1
+    rmse = None
+    best_model = None
+    best_order = None
+    best_pred = None
+    best_rmse = 10000000
+    for i in combs:
+        try:
+            model = ARIMA(train['Adj Close'], order=i)
+            output = model.fit()
+            pred = output.predict(start=start, end=end, typ='levels')
+            pred.index = data.index[start:end+1]
+            rmse = mean_squared_error(test['Adj Close'], pred)**0.5
+            if rmse < best_rmse:
+                best_order = i
+                best_rmse = rmse
+                best_model = output
+                best_pred = pred
+        except:
+            continue
+    if rmse == None:
+        return None
+    else:
+        return best_model, best_order, best_pred, test
+    
+
+def arima_selection_versus_chart(test, best_pred):
+    left_col, right_col = st.columns([0.4, 0.6])
+    with left_col:
+        st.write(best_pred.rename("differenced_series"))
+    with right_col:
+        versus_chart(test_data=test, prediction=best_pred)
+
+
+def arima_selection_loading_text(best_order):
+    st.write("Performing search to find the best model...")
+    st.write("Figure out order for ARIMA Model...")
+    st.write("Best model found:")
+    st.write("ARIMA", best_order)
+    st.write("")
+    st.write("")
+    st.write("")
+
+
+def forecast_with_arima_selection(data, best_order):
+    try:
+        model = ARIMA(data['Adj Close'], order=best_order)
+        output = model.fit()
+        st.write("FORECAST")
+        start = data.index[-1]
+        end = start + timedelta(days=14)
+        index_future_dates = pd.date_range(start=start, end=end)
+        pred = output.predict(start=len(data), end=len(data)+14, typ='levels').rename("ARIMA Predictions")
+        pred.index = index_future_dates
+        left_col, right_col = st.columns([0.4, 0.6])
+        with left_col:
+            st.write(pred)
+        with right_col:
+            forecast_chart(data=data, prediction=pred)
+    except:
+        st.warning("An error occurred while forecasting the data.")
+
