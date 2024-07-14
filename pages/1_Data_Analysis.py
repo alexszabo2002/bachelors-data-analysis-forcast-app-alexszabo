@@ -1,7 +1,7 @@
 import streamlit as st
 
 from authentication.auth import get_authenticator
-from pages_funcs.data_analysis_funcs import get_uploaded_file_name, process_data, classify_columns, save_dataframe_button, set_chart_filters, chart
+from pages_funcs.data_analysis_funcs import get_uploaded_file_name, process_data, classify_columns, save_dataframe_button, set_chart_filters, chart, images_to_firebase_loader
 
 authenticator = get_authenticator()
 
@@ -30,3 +30,5 @@ with tab_charts:
 
     with display_col:
         fig = chart(df_filled, chart_type, x_axis, y_axis, agg_function)
+
+    images_to_firebase_loader()

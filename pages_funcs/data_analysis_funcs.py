@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
+import os
 
 import firebase.firebase_funcs as fb
 
@@ -191,3 +192,25 @@ def set_chart_filters(numerical_columns, categorical_columns, temporal_columns):
         agg_function = None
 
     return chart_type, x_axis, y_axis, agg_function
+
+
+def images_to_firebase_loader():
+    local_upload_folder = "temp_uploads"
+
+    if not os.path.exists(local_upload_folder):
+        os.makedirs(local_upload_folder)
+
+    st.title("Upload Local Images to Firebase")
+
+    uploaded_files = st.file_uploader("Choose images to upload", type=["png"], accept_multiple_files=True)
+
+    if uploaded_files:
+        st.write(f"Selected {len(uploaded_files)} file(s)")
+
+    if st.button("Upload All Images"):
+        user_id = 'alexszabo'
+        for uploaded_file in uploaded_files:
+            with open(os.path.join(local_upload_folder, uploaded_file.name), "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            fb.save_image_to_firebase(os.path.join(local_upload_folder, uploaded_file.name), user_id)
+        st.success("All images uploaded to Firebase")

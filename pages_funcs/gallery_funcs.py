@@ -18,3 +18,18 @@ def restore_dataframe(links):
                 st.dataframe(loaded_df)
     else:
         st.warning("No files available in the database.")
+
+
+def restore_images(image_links):
+    if image_links:
+        image_names = list(image_links.keys())
+        selected_image = st.selectbox("Select an image to view", image_names)
+        if selected_image:
+            image_data = image_links[selected_image]
+            response_blob = get_file_from_firebase(image_data["url"])
+            if not response_blob:
+                st.warning("The selected image no longer exists in the database.")
+            else:
+                st.image(response_blob)
+    else:
+        st.warning("No images available in the database.")

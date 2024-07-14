@@ -4,6 +4,7 @@ import json
 from io import BytesIO
 import uuid
 import pandas as pd
+import os
 
 
 def initialize_firebase():
@@ -44,8 +45,35 @@ def save_dataframe_to_firebase(df, user_id, file_name):
     return blob.path
 
 
-def get_all_links():
+def save_image_to_firebase(image_path, user_id):
+    with open(image_path, "rb") as img_file:
+        img_buffer = BytesIO(img_file.read())
+
+    random_filename = uuid.uuid4()
+    file_url = f'{user_id}/images/{random_filename}.png'
+
+    blob = bucket.blob(file_url)
+    blob.upload_from_file(img_buffer, content_type='image/png')
+
+    db.collection('image_uploads').add({
+        'user_id': user_id,
+        'filename': os.path.basename(image_path),
+        'url': file_url,
+        'timestamp': firestore.SERVER_TIMESTAMP
+    })
+
+    return blob.path
+
+
+def get_all_file_uploads_links():
     docs = db.collection('file_uploads').stream()
+    links = {f"{doc.to_dict()['filename']} ({doc.to_dict()['timestamp']})": doc.to_dict() for doc in docs}
+    
+    return links
+
+
+def get_all_image_uploads_links():
+    docs = db.collection('image_uploads').stream()
     links = {f"{doc.to_dict()['filename']} ({doc.to_dict()['timestamp']})": doc.to_dict() for doc in docs}
     
     return links
