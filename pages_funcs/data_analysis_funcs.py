@@ -200,7 +200,7 @@ def images_to_firebase_loader():
     if not os.path.exists(local_upload_folder):
         os.makedirs(local_upload_folder)
 
-    st.title("Upload Local Images to Firebase")
+    st.subheader("Upload Local Images to Firebase")
 
     uploaded_files = st.file_uploader("Choose images to upload", type=["png"], accept_multiple_files=True)
 

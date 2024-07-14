@@ -17,6 +17,8 @@ with left_col:
     left_btn = st.button(label="Data Analysis", use_container_width=True)
     if left_btn:
         switch_page("Data Analysis")
+    st.write("")
+    st.write("The Data Analysis page allows users to upload CSV or Excel files, preprocess the data, fill missing values, generate descriptive statistics, and create various charts to visualize the data insights.")
 
 with right_col:
     with st.columns(5)[2]:
@@ -24,3 +26,5 @@ with right_col:
     right_btn = st.button(label="Forecast", use_container_width=True)
     if right_btn:
         switch_page("Forecast")
+    st.write("")
+    st.write("The Forecast page enables users to select a date range and a ticker symbol for a cryptocurrency or stock, extract data using the yfinance library, analyze the data as a time series, apply the ARIMA model, verify the accuracy of the forecast, calculate RMSE, and forecast future values.")
