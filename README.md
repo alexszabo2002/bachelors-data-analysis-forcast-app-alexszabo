@@ -1,0 +1,2 @@
+The Data Analysis page allows users to upload CSV or Excel files, preprocess the data, fill missing values, generate descriptive statistics, and create various charts to visualize the data insights.
+The Forecast page enables users to select a date range and a ticker symbol for a cryptocurrency or stock, extract data using the yfinance library, analyze the data as a time series, apply the ARIMA model, verify the accuracy of the forecast, calculate RMSE, and forecast future values.
